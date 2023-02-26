@@ -2,6 +2,14 @@ import './css/styles.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 const axios = require('axios').default;
 
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+
+var lightbox = new SimpleLightbox('.gallery a', {
+  /* options */
+  captionDelay: 250,
+});
+
 const BASE_URL = 'https://pixabay.com/api/';
 const API_KEY = '33947023-c15fa4d03e325678c88d2d925';
 const options = {
@@ -111,4 +119,5 @@ function createGalleryItems({ hits }) {
     )
     .join('');
   refs.gallery.insertAdjacentHTML('beforeend', items);
+  lightbox.refresh();
 }
