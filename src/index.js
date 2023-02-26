@@ -1,10 +1,13 @@
 import './css/styles.css';
+
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+// const axios = require('axios');
+// const axios = require('axios/dist/browser/axios.cjs');
 const axios = require('axios').default;
 
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-
 var lightbox = new SimpleLightbox('.gallery a', {
   /* options */
   captionDelay: 250,
@@ -27,6 +30,37 @@ const refs = {
  gallery: document.querySelector('.gallery'),
  btnLoadMore: document.querySelector('button.load-more'),
 };
+
+
+const instance = axios.create({
+  baseURL: 'https://pixabay.com/api/',
+  params: {
+    key: API_KEY,
+    image_type: 'photo',
+    orientation: 'horizontal',
+    safesearch: true,
+    per_page: 40,
+    page: 1,
+  },
+});
+// instance({ params: { q: 'cat' } }).then(function (response) {
+//   console.log(response.data);
+//   console.log(response.status);
+//   console.log(response.statusText);
+//   console.log(response.headers);
+//   console.log(response.config);
+// });
+// axios
+//   .get(`https://pixabay.com/api/?key=33947023-c15fa4d03e325678c88d2d925&q=cat`)
+//   .then(function (response) {
+//     console.log(response.data);
+//     console.log(response.status);
+//     console.log(response.statusText);
+//     console.log(response.headers);
+//     console.log(response.config);
+//   });
+
+
 
 refs.searchForm.addEventListener('submit', onClickSearchForm)
 refs.btnLoadMore.addEventListener('click', onClickLoadMore);
@@ -59,10 +93,28 @@ function onClickSearchForm(event) {
   if (!showLoadMore) {
   refs.btnLoadMore.classList.remove('visibility-hidden');
   }
+
+
+
+
 }
+
+async function searcPhoto(name) {
+return await instance({ params: { q: `${word}` } })
+  .then(function (response) {
+    return response;
+  })
+  .catch(function (error) {
+    // handle error
+    console.log(error);
+  });
+
+}
+
+
+
 function cleanGallery() {
 refs.gallery.textContent=''
-
 }
 
 function fetchhPhoto(value) {
@@ -88,6 +140,8 @@ function createGalleryItems({ hits, totalHits }) {
   if (options.page === 1) {
     Notify.success(`Hooray! We found ${totalHits} images.`);
   }
+    Notify.success(`Hooray! We found ${totalHits} images.`);
+
   const items = hits
     .map(
       ({
@@ -125,3 +179,13 @@ function createGalleryItems({ hits, totalHits }) {
   refs.gallery.insertAdjacentHTML('beforeend', items);
   lightbox.refresh();
 }
+
+
+
+
+
+  window.scrollBy({
+    top: 1,
+    left: 100,
+    behavior: 'smooth',
+  });
