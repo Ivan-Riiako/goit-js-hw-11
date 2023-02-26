@@ -8,18 +8,18 @@
   </head>
   <body>
     <form class="search-form" id="search-form">
-  <input
+  <input class="search-form__input"
     type="text"
     name="searchQuery"
     autocomplete="off"
     placeholder="Search images..."
   />
-  <button type="submit">Search</button>
+  <button type="submit" class="search-form__btn-submit">Search</button>
 </form>
-<button type="button" class="load-more">Load more</button>
 <div class="gallery">
   <!-- Карточки изображений -->
 </div>
+<button type="button" class="load-more visibility-hidden">Load more</button>
     <script src="index.js" type="module"></script>
   </body>
 </html>

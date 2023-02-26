@@ -7,38 +7,119 @@ body {
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #fafafa;
+  background-color: #dfd9d2b9;
   color: #212121;
   line-height: 1.5;
+  margin: 0;
 }
 
-#search-box {
-  font: inherit;
-  padding: 8px;
-  max-width: 320px;
-  margin-bottom: 16px;
-}
-.li-countri{
-margin: 10px;
-padding: 0;
+.search-form{
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+width: 100%;
 
 display: flex;
+justify-content: center;
+padding-top: 10px;
+padding-bottom: 10px;
+
+background-color: rgb(69, 45, 204);
+}
+
+.search-form__input {
+  max-width: 320px;
+
+  padding: 8px;
+
+  font: inherit;
+  /* border-radius: 1px; */
+    border: none;
+  background-color: #ffffff;
+}
+
+.search-form__btn-submit{
+/* border-radius: 1px; */
+border: none;
+cursor: pointer;
 align-items: center;
-gap: 15px;
-
-list-style: none;
-/* outline: 2px solid  #2d60d660; */
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 
-.li-countri img{
+.gallery{
+margin-top: 70px;
+
+display: flex;
+flex-wrap: wrap;
+gap: 30px;
+padding: 15px;
+}
+
+.photo-card{
+  width: calc((100% - 90px)/4);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2),
+      0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12);
+}
+
+.photo-link{
 display: block;
-line-height: 0;
-padding: 0;
-margin: 0;
-height: 100%;
+  text-decoration: none;
+  height: 200px;
 }
-.li-countri p{
-padding: 0;
-margin: 0;
-font-size: 1.3rem;
+
+.photo-link:hover {
+  cursor: zoom-in;
+}
+
+.photo-link img{
+height: 100%;
+width: 100%;
+object-fit: cover;
+}
+
+.photo-link img:hover {
+  transform: scale(1.03);
+}
+
+.info{
+display: flex;
+justify-content: space-around;
+}
+
+.info-item{
+display: flex;
+flex-direction: column;
+align-items: center;
+margin-top: 8px;
+margin-bottom: 5px;
+}
+
+
+.load-more{
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 25px;
+
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 28px;
+  padding-right: 28px;
+
+  color: #ffffff;
+  background-color: rgb(48, 83, 187);
+  border: none;
+  border-radius: 4px;
+cursor: pointer;
+
+}
+.visibility-hidden{
+  display: none;
 }
