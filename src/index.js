@@ -53,7 +53,9 @@ function onClickSearchForm(event) {
 
   cleanGallery();
  options.page = 1;
-  fetchhPhoto(data).then(createGalleryItems).catch(err => Notify.failure(err));
+  fetchhPhoto(data)
+    .then(createGalleryItems)
+    .catch(err => Notify.failure(err));
   if (!showLoadMore) {
   refs.btnLoadMore.classList.remove('visibility-hidden');
   }
@@ -76,14 +78,16 @@ function fetchhPhoto(value) {
   );
 }
 
-function createGalleryItems({ hits }) {
+function createGalleryItems({ hits, totalHits }) {
   if (hits.length === 0) {
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
-    return
+    return;
   }
-  Notify.success('Sol lucet omnibus');
+  if (options.page === 1) {
+    Notify.success(`Hooray! We found ${totalHits} images.`);
+  }
   const items = hits
     .map(
       ({
