@@ -96,7 +96,6 @@ function onClickSearchForm(event) {
 
 
 
-
 }
 
 async function searcPhoto(name) {
@@ -182,10 +181,20 @@ function createGalleryItems({ hits, totalHits }) {
 
 
 
+function smoothScroll() {
+
+const { height: cardHeight } = document
+  .querySelector('.gallery')
+  .firstElementChild.getBoundingClientRect();
+
+window.scrollBy({
+  top: cardHeight * 2,
+  behavior: 'smooth',
+});
+};
 
 
-  window.scrollBy({
-    top: 1,
-    left: 100,
-    behavior: 'smooth',
-  });
+
+document.addEventListener('scroll', smoothScroll);
+
+ 
