@@ -6,6 +6,7 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 // const axios = require('axios/dist/browser/axios.cjs');
 const axios = require('axios').default;
 
+//SimpleLightbox
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 var lightbox = new SimpleLightbox('.gallery a', {
@@ -15,132 +16,78 @@ var lightbox = new SimpleLightbox('.gallery a', {
 
 const BASE_URL = 'https://pixabay.com/api/';
 const API_KEY = '33947023-c15fa4d03e325678c88d2d925';
-const options = {
-  key: API_KEY,
-  image_type: 'photo',
-  orientation: 'horizontal',
-  safesearch: true,
-  per_page: 40,
-  page:1,
-};
-let showLoadMore=false;
-const refs = {
- searchForm: document.querySelector('form#search-form'),
- inputForm:document.querySelector('input'),
- gallery: document.querySelector('.gallery'),
- btnLoadMore: document.querySelector('button.load-more'),
-};
-
-
 const instance = axios.create({
-  baseURL: 'https://pixabay.com/api/',
+  baseURL: BASE_URL,
   params: {
     key: API_KEY,
     image_type: 'photo',
     orientation: 'horizontal',
     safesearch: true,
     per_page: 40,
-    page: 1,
   },
 });
-// instance({ params: { q: 'cat' } }).then(function (response) {
-//   console.log(response.data);
-//   console.log(response.status);
-//   console.log(response.statusText);
-//   console.log(response.headers);
-//   console.log(response.config);
-// });
-// axios
-//   .get(`https://pixabay.com/api/?key=33947023-c15fa4d03e325678c88d2d925&q=cat`)
-//   .then(function (response) {
-//     console.log(response.data);
-//     console.log(response.status);
-//     console.log(response.statusText);
-//     console.log(response.headers);
-//     console.log(response.config);
-//   });
 
+let currentPage = 1;
+let showLoadMore = false;
+let totalPage;
 
+const refs = {
+  searchForm: document.querySelector('form#search-form'),
+  inputForm: document.querySelector('input'),
+  gallery: document.querySelector('.gallery'),
+  btnLoadMore: document.querySelector('button.load-more'),
+};
 
-refs.searchForm.addEventListener('submit', onClickSearchForm)
+refs.searchForm.addEventListener('submit', onClickSButtonSearchForm);
 refs.btnLoadMore.addEventListener('click', onClickLoadMore);
 
-function onClickLoadMore() {
+async function onClickLoadMore() {
   const data = refs.inputForm.value;
-  options.page += 1;
-  
-const searchParams = new URLSearchParams(options);
-
-  console.log(options.page);
-  fetchhPhoto(data).then(createGalleryItems);
+  currentPage += 1;
+  const response = await fetchhPhoto(data, currentPage);
+  createGalleryItems(response);
+  smoothScroll();
 }
 
-function onClickSearchForm(event) {
+async function onClickSButtonSearchForm(event) {
   event.preventDefault();
-  
+  currentPage = 1;
   const data = refs.inputForm.value;
 
   if (data === '') {
     Notify.failure('Введите слово');
-    return
+    return;
   }
 
   cleanGallery();
- options.page = 1;
-  fetchhPhoto(data)
-    .then(createGalleryItems)
-    .catch(err => Notify.failure(err));
-  if (!showLoadMore) {
-  refs.btnLoadMore.classList.remove('visibility-hidden');
-  }
-
-
-
+const response = await fetchhPhoto(data);
+createGalleryItems(response);
 }
-
-async function searcPhoto(name) {
-return await instance({ params: { q: `${word}` } })
-  .then(function (response) {
-    return response;
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error);
-  });
-
-}
-
-
 
 function cleanGallery() {
 refs.gallery.textContent=''
 }
 
-function fetchhPhoto(value) {
-  const searchParams = new URLSearchParams(options);
-  return fetch(`${BASE_URL}?${searchParams}&q=${value}`).then(
-    response => {
-      if (!response.ok) {
-        // Notify.failure('Oops, there is no country with that name');
-        throw 'Oops, there is no photo with that name';
-      }
-      return response.json();
-    }
-  );
+function toggleShowBtnLoadMore() {
+  if (currentPage < totalPage) {
+    refs.btnLoadMore.classList.remove('visibility-hidden');
+    return
+  }
+refs.btnLoadMore.classList.add('visibility-hidden');
+
 }
 
-function createGalleryItems({ hits, totalHits }) {
+function createGalleryItems({ data:{hits, totalHits} }) {
   if (hits.length === 0) {
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
     return;
   }
-  if (options.page === 1) {
+  if (currentPage === 1) {
     Notify.success(`Hooray! We found ${totalHits} images.`);
   }
-    Notify.success(`Hooray! We found ${totalHits} images.`);
-
+totalPage = totalHits/40;
   const items = hits
     .map(
       ({
@@ -177,24 +124,31 @@ function createGalleryItems({ hits, totalHits }) {
     .join('');
   refs.gallery.insertAdjacentHTML('beforeend', items);
   lightbox.refresh();
+  toggleShowBtnLoadMore();
 }
 
+ function fetchhPhoto(name,page=1) {
+  return instance({ params: { q: `${name}`, page: `${page}` } })
+    .then(function (response) {
+      // if (!response.ok) {
+      //   throw 'Oops, there is no photo with that name';
+      // }
+      console.log(response);
+      return response;
+    })
+    .catch(function (error) {
+      // handle error
+      Notify.failure(error);
+    });
+}
 
-
-function smoothScroll() {
+ function smoothScroll() {
 
 const { height: cardHeight } = document
   .querySelector('.gallery')
   .firstElementChild.getBoundingClientRect();
-
-window.scrollBy({
+window.scrollBy(0,{
   top: cardHeight * 2,
   behavior: 'smooth',
 });
 };
-
-
-
-document.addEventListener('scroll', smoothScroll);
-
- 
