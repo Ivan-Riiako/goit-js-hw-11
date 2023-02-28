@@ -13,6 +13,7 @@ const axios = require('axios').default;
 //SimpleLightbox
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import { Block } from 'notiflix';
 var lightbox = new SimpleLightbox('.gallery a', {
   /* options */
   captionDelay: 250,
@@ -40,11 +41,15 @@ const refs = {
   inputForm: document.querySelector('input'),
   gallery: document.querySelector('.gallery'),
   btnLoadMore: document.querySelector('button.load-more'),
+  btnUp: document.querySelector('.link-up'),
 };
-
 refs.searchForm.addEventListener('submit', onClickSButtonSearchForm);
 refs.btnLoadMore.addEventListener('click', onClickLoadMore);
 window.addEventListener('scroll', throttle(infinityScroll, Throttle_DELAY));
+
+
+
+
 
 async function onClickLoadMore() {
   const data = refs.inputForm.value;
@@ -191,21 +196,35 @@ async function infinityScroll() {
     // smoothScroll();
   }
 };
-
-
-
 async function smoothScroll() {
+  const { height: cardHeight } = await document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
 
-const { height: cardHeight } = await document
-  .querySelector('.gallery')
-  .firstElementChild.getBoundingClientRect();
-
-  
-window.scrollBy({
-  top: cardHeight * 2,
-  left:0,
-  behavior: 'smooth',
-});
-  
+  window.scrollBy({
+    top: cardHeight * 2,
+    left: 0,
+    behavior: 'smooth',
+  });
 }
 
+// Кнопка вверх страницы
+window.addEventListener('scroll', onCheckShowBtnUp);
+refs.btnUp.addEventListener('click', onClickUp);
+function onCheckShowBtnUp() {
+   const userHeightWindov = window.innerHeight;
+
+  if (window.scrollY > userHeightWindov) {
+    refs.btnUp.classList.remove('visibility-hidden');
+    return;
+  }
+  refs.btnUp.classList.add('visibility-hidden');
+};
+function onClickUp(e){
+  e.preventDefault();
+window.scrollTo({
+  top: 0,
+  left: 0,
+  behavior: 'smooth',
+});
+};

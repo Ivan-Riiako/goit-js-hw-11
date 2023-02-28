@@ -122,6 +122,27 @@ margin-bottom: 5px;
 cursor: pointer;
 
 }
-.visibility-hidden{
+
+
+.link-up{
+position: fixed;
+  bottom: 20px; ;
+  right:20px ;
+  z-index: 1;
+background-color: #ebd6ad;
+border-radius: 50%;
+display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.link-up svg{
+  width: 50px;
+  height: 50px;
+fill: rgb(45, 120, 226);
+}
+.link-up svg:hover {
+fill: rgb(184, 124, 51);
+}
+.visibility-hidden {
   display: none;
 }
