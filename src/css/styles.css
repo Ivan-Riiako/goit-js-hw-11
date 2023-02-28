@@ -67,7 +67,7 @@ padding: 15px;
 @media screen and (min-width: 600px) {
   .photo-card {
     width: calc((100% - 30px)/2);
-  }
+  }}
 @media screen and (min-width: 1044px) {
 .photo-card { width: calc((100% - 60px)/3);
 }
