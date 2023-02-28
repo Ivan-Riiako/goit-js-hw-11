@@ -192,8 +192,8 @@ async function infinityScroll() {
   // console.log('высота all окна ', allWindov);
 
   if (userHeightWindov + 100 > documentRectBottom) {
-    onClickLoadMore();
-    // smoothScroll();
+     await onClickLoadMore();
+    smoothScroll();
   }
 };
 async function smoothScroll() {
