@@ -1,7 +1,11 @@
 import './css/styles.css';
-
+// Notify;
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
+// Throttle
+var throttle = require('lodash.throttle');
+
+// Axios;
 // const axios = require('axios');
 // const axios = require('axios/dist/browser/axios.cjs');
 const axios = require('axios').default;
@@ -14,6 +18,7 @@ var lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 
+const Throttle_DELAY = 500;
 const BASE_URL = 'https://pixabay.com/api/';
 const API_KEY = '33947023-c15fa4d03e325678c88d2d925';
 const instance = axios.create({
@@ -28,7 +33,6 @@ const instance = axios.create({
 });
 
 let currentPage = 1;
-let showLoadMore = false;
 let totalPage;
 
 const refs = {
@@ -40,18 +44,20 @@ const refs = {
 
 refs.searchForm.addEventListener('submit', onClickSButtonSearchForm);
 refs.btnLoadMore.addEventListener('click', onClickLoadMore);
+window.addEventListener('scroll', throttle(infinityScroll, Throttle_DELAY));
 
 async function onClickLoadMore() {
   const data = refs.inputForm.value;
   currentPage += 1;
+
   const response = await fetchhPhoto(data, currentPage);
   createGalleryItems(response);
-  smoothScroll();
+toggleShowBtnLoadMore();
+
 }
 
 async function onClickSButtonSearchForm(event) {
   event.preventDefault();
-  currentPage = 1;
   const data = refs.inputForm.value;
 
   if (data === '') {
@@ -59,9 +65,12 @@ async function onClickSButtonSearchForm(event) {
     return;
   }
 
-  cleanGallery();
+cleanGallery();
+currentPage = 1;
 const response = await fetchhPhoto(data);
+totalPage = response.data.totalHits / 40;
 createGalleryItems(response);
+toggleShowBtnLoadMore();
 }
 
 function cleanGallery() {
@@ -76,18 +85,25 @@ function toggleShowBtnLoadMore() {
 refs.btnLoadMore.classList.add('visibility-hidden');
 
 }
+function checkValidResponse() {
+}
 
 function createGalleryItems({ data:{hits, totalHits} }) {
-  if (hits.length === 0) {
+  if ((hits.length === 0) & (currentPage === 1)) {
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
     return;
   }
+
   if (currentPage === 1) {
     Notify.success(`Hooray! We found ${totalHits} images.`);
   }
-totalPage = totalHits/40;
+  if (currentPage >= totalPage) {
+    Notify.info("We're sorry, but you've reached the end of search results.");
+  }
+  
+
   const items = hits
     .map(
       ({
@@ -124,31 +140,72 @@ totalPage = totalHits/40;
     .join('');
   refs.gallery.insertAdjacentHTML('beforeend', items);
   lightbox.refresh();
-  toggleShowBtnLoadMore();
 }
 
  function fetchhPhoto(name,page=1) {
   return instance({ params: { q: `${name}`, page: `${page}` } })
     .then(function (response) {
-      // if (!response.ok) {
-      //   throw 'Oops, there is no photo with that name';
-      // }
+      
+      if ((page !== 1) & response.data.length===0) {
+        throw 'Картинок больше нет!';
+      }
       console.log(response);
       return response;
     })
     .catch(function (error) {
       // handle error
+      if (error.response) {
+        // Запрос был сделан, и сервер ответил кодом состояния, который
+        // выходит за пределы 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      }
       Notify.failure(error);
     });
 }
+async function infinityScroll() {
+  if (currentPage > totalPage  ) {
+    return
+  }
+  
+  const documentRectBottom = document.body.getBoundingClientRect().bottom;
+  const userHeightWindov = window.innerHeight;
+  // const allWindov = document.body.offsetHeight;
+  // const currentTopArea = window.pageYOffset;
+  // console.log(
+  //   'getBoundingClientRect().bottom Растояние от верхней точки экрана пользователя до нижней точки элемента',
+  //   documentRectBottom
+  // );
 
- function smoothScroll() {
+  // console.log('userHeightWindov высота окна пользователя', userHeightWindov);
+  // console.log('текущая высота верхней точки экрана', currentTopArea);
+  // console.log(
+  //   'высота окна пользователя+ текущая высота верхней точки экрана',
+  //   userHeightWindov + currentTopArea
+  // );
+  // console.log('высота all окна ', allWindov);
 
-const { height: cardHeight } = document
+  if (userHeightWindov + 100 > documentRectBottom) {
+    onClickLoadMore();
+    // smoothScroll();
+  }
+};
+
+
+
+async function smoothScroll() {
+
+const { height: cardHeight } = await document
   .querySelector('.gallery')
   .firstElementChild.getBoundingClientRect();
-window.scrollBy(0,{
+
+  
+window.scrollBy({
   top: cardHeight * 2,
+  left:0,
   behavior: 'smooth',
 });
-};
+  
+}
+

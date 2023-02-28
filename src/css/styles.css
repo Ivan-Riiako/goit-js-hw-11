@@ -70,6 +70,7 @@ padding: 15px;
 display: block;
   text-decoration: none;
   height: 200px;
+  overflow: hidden;
 }
 
 .photo-link:hover {
@@ -80,10 +81,11 @@ display: block;
 height: 100%;
 width: 100%;
 object-fit: cover;
+transition: transform 250ms ease-out;
 }
 
 .photo-link img:hover {
-  transform: scale(1.03);
+  transform: scale(1.20);
 }
 
 .info{
