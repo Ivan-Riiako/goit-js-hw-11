@@ -16,11 +16,6 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import { Block } from 'notiflix';
 
-var lightbox = new SimpleLightbox('.gallery a', {
-  /* options */
-  captionDelay: 250,
-});
-
 const Throttle_DELAY = 500;
 const BASE_URL = 'https://pixabay.com/api/';
 const API_KEY = '33947023-c15fa4d03e325678c88d2d925';
@@ -34,10 +29,6 @@ const instance = axios.create({
     per_page: 5,
   },
 });
-
-let currentPage = 1;
-let totalPage;
-
 const refs = {
   searchForm: document.querySelector('form#search-form'),
   inputForm: document.querySelector('input'),
@@ -45,24 +36,14 @@ const refs = {
   btnLoadMore: document.querySelector('button.load-more'),
   btnUp: document.querySelector('.link-up'),
 };
+let currentPage = 1;
+let totalPage;
+var lightbox = new SimpleLightbox('.gallery a', {
+  /* options */
+  captionDelay: 250,
+});
+
 refs.searchForm.addEventListener('submit', onClickSButtonSearchForm);
-refs.btnLoadMore.addEventListener('click', onClickLoadMore);
-window.addEventListener('scroll', throttle(infinityScroll, Throttle_DELAY));
-
-
-
-
-
-async function onClickLoadMore() {
-  const data = refs.inputForm.value;
-  currentPage += 1;
-  const response = await fetchhPhoto(data, currentPage);
-  if (currentPage>=totalPage) {
-    Notify.info("We're sorry, but you've reached the end of search results.");
-  }
-  createGalleryItems(response);
-  toggleShowBtnLoadMore();
-}
 
 async function onClickSButtonSearchForm(event) {
   event.preventDefault();
@@ -90,20 +71,11 @@ Notify.failure(
 
   toggleShowBtnLoadMore();
 }
-
+// очистка разметки галереи
 function cleanGallery() {
 refs.gallery.textContent=''
 }
-
-function toggleShowBtnLoadMore() {
-  if (currentPage < totalPage) {
-    refs.btnLoadMore.classList.remove('visibility-hidden');
-    return
-  }
-refs.btnLoadMore.classList.add('visibility-hidden');
-
-}
-
+// Генерация разметки
 function createGalleryItems({ data:{hits,} }) {
   const items = hits
     .map(
@@ -142,16 +114,17 @@ function createGalleryItems({ data:{hits,} }) {
   refs.gallery.insertAdjacentHTML('beforeend', items);
   lightbox.refresh();
 }
+// Создания массива запросов для экономии времени загрузки
 async function makeArreyFetchPhoto(name) {
 const arreyPhoto = [];
   for (let i = 1; i <= 8;i+=1 ) {
-    currentPage;
     let currentPageFetch = i + ((currentPage - 1) * 8);
     const fetchOnePhoto = fetchhPhoto(name, currentPageFetch);
     arreyPhoto.push(fetchOnePhoto);
   }
  return await Promise.all(arreyPhoto);
 }
+// Запрос на сервер
  function fetchhPhoto(name,page=1) {
   return instance({ params: { q: `${name}`, page: `${page}` } })
     .then(function (response) {
@@ -173,6 +146,11 @@ const arreyPhoto = [];
       Notify.failure(error);
     });
 }
+
+
+// Бесконечный скролл
+// refs.btnLoadMore.addEventListener('click', onClickLoadMore);
+window.addEventListener('scroll', throttle(infinityScroll, Throttle_DELAY));
 async function infinityScroll() {
   if (currentPage > totalPage  ) {
     return
@@ -180,26 +158,32 @@ async function infinityScroll() {
   
   const documentRectBottom = document.body.getBoundingClientRect().bottom;
   const userHeightWindov = window.innerHeight;
-  // const allWindov = document.body.offsetHeight;
-  // const currentTopArea = window.pageYOffset;
-  // console.log(
-  //   'getBoundingClientRect().bottom Растояние от верхней точки экрана пользователя до нижней точки элемента',
-  //   documentRectBottom
-  // );
-
-  // console.log('userHeightWindov высота окна пользователя', userHeightWindov);
-  // console.log('текущая высота верхней точки экрана', currentTopArea);
-  // console.log(
-  //   'высота окна пользователя+ текущая высота верхней точки экрана',
-  //   userHeightWindov + currentTopArea
-  // );
-  // console.log('высота all окна ', allWindov);
 
   if (userHeightWindov + 100 > documentRectBottom) {
      await onClickLoadMore();
     smoothScroll();
   }
 };
+async function onClickLoadMore() {
+  const data = refs.inputForm.value;
+  currentPage += 1;
+  if (currentPage > totalPage) {
+    Notify.info("We're sorry, but you've reached the end of search results.");
+  }
+  const response = await makeArreyFetchPhoto(data);
+  response.map(createGalleryItems);
+  toggleShowBtnLoadMore();
+}
+// скрыть/показать кнопку загрузить еще 
+function toggleShowBtnLoadMore() {
+  if (currentPage < totalPage) {
+    refs.btnLoadMore.classList.remove('visibility-hidden');
+    return
+  }
+refs.btnLoadMore.classList.add('visibility-hidden');
+
+}
+// Скрол на одну картинку вниз при дополнитеьной подгрузке 
 async function smoothScroll() {
   const { height: cardHeight } = await document
     .querySelector('.gallery')
