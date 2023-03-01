@@ -56,11 +56,12 @@ window.addEventListener('scroll', throttle(infinityScroll, Throttle_DELAY));
 async function onClickLoadMore() {
   const data = refs.inputForm.value;
   currentPage += 1;
-
   const response = await fetchhPhoto(data, currentPage);
+  if (currentPage>=totalPage) {
+    Notify.info("We're sorry, but you've reached the end of search results.");
+  }
   createGalleryItems(response);
-toggleShowBtnLoadMore();
-
+  toggleShowBtnLoadMore();
 }
 
 async function onClickSButtonSearchForm(event) {
@@ -72,14 +73,22 @@ async function onClickSButtonSearchForm(event) {
     return;
   }
 
-cleanGallery();
+  cleanGallery();
   currentPage = 1;
   const response = await makeArreyFetchPhoto(data);
-  console.log(response);
-totalPage = response[0].data.totalHits / 40;
+  totalPage = response[0].data.totalHits / 40;
 
-response.map(createGalleryItems);
-toggleShowBtnLoadMore();
+  if (response[0].data.totalHits===0) {
+Notify.failure(
+  'Sorry, there are no images matching your search query. Please try again.'
+);
+  } else {
+   Notify.success(`Hooray! We found ${response[0].data.totalHits} images.`);
+  }
+
+  response.map(createGalleryItems);
+
+  toggleShowBtnLoadMore();
 }
 
 function cleanGallery() {
@@ -94,23 +103,8 @@ function toggleShowBtnLoadMore() {
 refs.btnLoadMore.classList.add('visibility-hidden');
 
 }
-function checkValidResponse({ data: { hits, totalHits } }) {
-if ((hits.length === 0) & (currentPage === 1)) {
-  Notify.failure(
-    'Sorry, there are no images matching your search query. Please try again.'
-  );
-  return 1;
-}
 
-if (currentPage === 1) {
-  Notify.success(`Hooray! We found ${totalHits} images.`);
-}
-if (currentPage >= totalPage) {
-  Notify.info("We're sorry, but you've reached the end of search results.");
-}
-}
-
-function createGalleryItems({ data:{hits, totalHits} }) {
+function createGalleryItems({ data:{hits,} }) {
   const items = hits
     .map(
       ({
