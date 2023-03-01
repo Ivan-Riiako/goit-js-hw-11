@@ -29,7 +29,7 @@ background-color: rgb(69, 45, 204);
 }
 
 .search-form__input {
-  max-width: 120px;
+  max-width: 180px;
   padding: 8px;
 
   font: inherit;

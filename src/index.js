@@ -1,4 +1,5 @@
 import './css/styles.css';
+
 // Notify;
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
@@ -14,6 +15,7 @@ const axios = require('axios').default;
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import { Block } from 'notiflix';
+
 var lightbox = new SimpleLightbox('.gallery a', {
   /* options */
   captionDelay: 250,
@@ -29,7 +31,7 @@ const instance = axios.create({
     image_type: 'photo',
     orientation: 'horizontal',
     safesearch: true,
-    per_page: 40,
+    per_page: 5,
   },
 });
 
@@ -71,10 +73,12 @@ async function onClickSButtonSearchForm(event) {
   }
 
 cleanGallery();
-currentPage = 1;
-const response = await fetchhPhoto(data);
-totalPage = response.data.totalHits / 40;
-createGalleryItems(response);
+  currentPage = 1;
+  const response = await makeArreyFetchPhoto(data);
+  console.log(response);
+totalPage = response[0].data.totalHits / 40;
+
+response.map(createGalleryItems);
 toggleShowBtnLoadMore();
 }
 
@@ -90,25 +94,23 @@ function toggleShowBtnLoadMore() {
 refs.btnLoadMore.classList.add('visibility-hidden');
 
 }
-function checkValidResponse() {
+function checkValidResponse({ data: { hits, totalHits } }) {
+if ((hits.length === 0) & (currentPage === 1)) {
+  Notify.failure(
+    'Sorry, there are no images matching your search query. Please try again.'
+  );
+  return 1;
+}
+
+if (currentPage === 1) {
+  Notify.success(`Hooray! We found ${totalHits} images.`);
+}
+if (currentPage >= totalPage) {
+  Notify.info("We're sorry, but you've reached the end of search results.");
+}
 }
 
 function createGalleryItems({ data:{hits, totalHits} }) {
-  if ((hits.length === 0) & (currentPage === 1)) {
-    Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-    return;
-  }
-
-  if (currentPage === 1) {
-    Notify.success(`Hooray! We found ${totalHits} images.`);
-  }
-  if (currentPage >= totalPage) {
-    Notify.info("We're sorry, but you've reached the end of search results.");
-  }
-  
-
   const items = hits
     .map(
       ({
@@ -146,7 +148,16 @@ function createGalleryItems({ data:{hits, totalHits} }) {
   refs.gallery.insertAdjacentHTML('beforeend', items);
   lightbox.refresh();
 }
-
+async function makeArreyFetchPhoto(name) {
+const arreyPhoto = [];
+  for (let i = 1; i <= 8;i+=1 ) {
+    currentPage;
+    let currentPageFetch = i + ((currentPage - 1) * 8);
+    const fetchOnePhoto = fetchhPhoto(name, currentPageFetch);
+    arreyPhoto.push(fetchOnePhoto);
+  }
+ return await Promise.all(arreyPhoto);
+}
  function fetchhPhoto(name,page=1) {
   return instance({ params: { q: `${name}`, page: `${page}` } })
     .then(function (response) {
@@ -154,7 +165,6 @@ function createGalleryItems({ data:{hits, totalHits} }) {
       if ((page !== 1) & response.data.length===0) {
         throw 'Картинок больше нет!';
       }
-      console.log(response);
       return response;
     })
     .catch(function (error) {
