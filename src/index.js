@@ -3,45 +3,23 @@ import './css/styles.css';
 // Notify;
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
+import {createGalleryItems} from './js/make-gallery';
+import { fetchhPhoto } from './js/fetch-photo';
+
 // Throttle
 var throttle = require('lodash.throttle');
 
-// Axios;
-// const axios = require('axios');
-// const axios = require('axios/dist/browser/axios.cjs');
-const axios = require('axios').default;
-
-//SimpleLightbox
-import SimpleLightbox from "simplelightbox";
-import "simplelightbox/dist/simple-lightbox.min.css";
-import { Block } from 'notiflix';
-
 const Throttle_DELAY = 500;
-const BASE_URL = 'https://pixabay.com/api/';
-const API_KEY = '33947023-c15fa4d03e325678c88d2d925';
-const instance = axios.create({
-  baseURL: BASE_URL,
-  params: {
-    key: API_KEY,
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: true,
-    per_page: 5,
-  },
-});
-const refs = {
+
+export const refs = {
   searchForm: document.querySelector('form#search-form'),
   inputForm: document.querySelector('input'),
   gallery: document.querySelector('.gallery'),
-  btnLoadMore: document.querySelector('button.load-more'),
+  btnLoadMore: document.querySelector('.load-more'),
   btnUp: document.querySelector('.link-up'),
 };
 let currentPage = 1;
 let totalPage;
-var lightbox = new SimpleLightbox('.gallery a', {
-  /* options */
-  captionDelay: 250,
-});
 
 refs.searchForm.addEventListener('submit', onClickSButtonSearchForm);
 
@@ -75,45 +53,7 @@ Notify.failure(
 function cleanGallery() {
 refs.gallery.textContent=''
 }
-// Генерация разметки
-function createGalleryItems({ data:{hits,} }) {
-  const items = hits
-    .map(
-      ({
-        webformatURL,
-        tags,
-        largeImageURL,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) =>
-        `<div class="photo-card"><a class="photo-link" href="${largeImageURL}">
-  <img src="${webformatURL}" alt="${tags}" width='300px' loading="lazy" /></a>
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b>
-      ${likes}
-    </p>
-    <p class="info-item">
-      <b>Views</b>
-      ${views}
-    </p>
-    <p class="info-item">
-      <b>Comments</b>
-      ${comments}
-    </p>
-    <p class="info-item">
-      <b>Downloads</b>
-      ${downloads}
-    </p>
-  </div>
-</div>`
-    )
-    .join('');
-  refs.gallery.insertAdjacentHTML('beforeend', items);
-  lightbox.refresh();
-}
+
 // Создания массива запросов для экономии времени загрузки
 async function makeArreyFetchPhoto(name) {
 const arreyPhoto = [];
@@ -124,29 +64,6 @@ const arreyPhoto = [];
   }
  return await Promise.all(arreyPhoto);
 }
-// Запрос на сервер
- function fetchhPhoto(name,page=1) {
-  return instance({ params: { q: `${name}`, page: `${page}` } })
-    .then(function (response) {
-      
-      if ((page !== 1) & response.data.length===0) {
-        throw 'Картинок больше нет!';
-      }
-      return response;
-    })
-    .catch(function (error) {
-      // handle error
-      if (error.response) {
-        // Запрос был сделан, и сервер ответил кодом состояния, который
-        // выходит за пределы 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      }
-      Notify.failure(error);
-    });
-}
-
 
 // Бесконечный скролл
 // refs.btnLoadMore.addEventListener('click', onClickLoadMore);
